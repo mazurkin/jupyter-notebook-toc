@@ -2,6 +2,8 @@
 
 Automatic TOC (table of contents) for the Jupyter Notebooks
 
+![screenshot.png](doc/screenshot.png)
+
 ## add the code to the end of the Jupyter notebook
 
 ```python
@@ -19,3 +21,9 @@ IPython.display.display(
 ```shell
 jupyter nbconvert --to html --output "notebook" -y "notebook.ipynb"
 ```
+
+## knows issue
+
+keep all header titles unique, right now Jupyter assigns the same `id` to the headers if the text is the same:
+
+https://github.com/jupyter/nbconvert/issues/1682
