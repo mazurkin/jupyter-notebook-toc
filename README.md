@@ -1,6 +1,6 @@
 # jupyter-notebook-toc
 
-Automatic TOC (table of contents) for the Jupyter Notebooks
+Automatic TOC (table of contents) for the Jupyter Notebooks renders in HTML format
 
 ![screenshot.png](doc/screenshot.png)
 
