@@ -30,12 +30,37 @@
         border-radius: 4px;
         padding: 10px;
         max-height: 80vh;
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
         font-family: sans-serif;
         font-size: 0.9em;
         z-index: 10000;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       }
+      #floatingNav .toc-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-weight: bold;
+        color: #333;
+      }
+      #floatingNav .toc-toggle {
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background: #f7f7f7;
+        color: #333;
+        cursor: pointer;
+        font-size: 1em;
+        line-height: 1;
+        padding: 2px 6px;
+      }
+      #floatingNav .toc-toggle:hover { background: #e8e8e8; }
+      #floatingNav .toc-body {
+        overflow-y: auto;
+        margin-top: 8px;
+      }
+      #floatingNav.collapsed .toc-body { display: none; }
       #floatingNav ul { list-style: none; margin: 0; padding: 0; }
       #floatingNav li { margin: 2px 0; }
       #floatingNav a {
@@ -86,7 +111,39 @@
       list.appendChild(li);
     });
 
-    nav.appendChild(list);
+    // Header with fold/unfold toggle button
+    const header = document.createElement('div');
+    header.className = 'toc-header';
+
+    const title = document.createElement('span');
+    title.textContent = 'Contents';
+
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'toc-toggle';
+
+    const body = document.createElement('div');
+    body.className = 'toc-body';
+    body.appendChild(list);
+
+    function setCollapsed(collapsed) {
+      nav.classList.toggle('collapsed', collapsed);
+      toggle.textContent = collapsed ? '▸' : '▾';
+      toggle.title = collapsed ? 'Unfold table of contents' : 'Fold table of contents';
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      try { localStorage.setItem('tocCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+    }
+
+    toggle.addEventListener('click', () => setCollapsed(!nav.classList.contains('collapsed')));
+
+    header.appendChild(title);
+    header.appendChild(toggle);
+    nav.appendChild(header);
+    nav.appendChild(body);
+
+    let startCollapsed = false;
+    try { startCollapsed = localStorage.getItem('tocCollapsed') === '1'; } catch (e) {}
+    setCollapsed(startCollapsed);
 
     document.body.appendChild(nav);
 
