@@ -82,11 +82,34 @@
 
     const list = document.createElement('ul');
 
+    // Make sure every heading gets a unique id; duplicates get a -2, -3, ... suffix
+    const usedIds = new Set();
+    function uniqueId(heading) {
+      const base = heading.id || ('h_' + slugify(heading.textContent));
+      let candidate = base;
+      let n = 1;
+      // also avoid clashing with ids of other elements (e.g. a later heading already named "foo-2")
+      while (usedIds.has(candidate) ||
+             (document.getElementById(candidate) && document.getElementById(candidate) !== heading)) {
+        n++;
+        candidate = base + '-' + n;
+      }
+      usedIds.add(candidate);
+      return candidate;
+    }
+
+    const linkByHeading = new Map();
+
     // Build list items for each heading
     headings.forEach(heading => {
-      if (!heading.id) {
-        // Generate an ID from the heading text if missing:contentReference[oaicite:2]{index=2}
-        heading.id = 'h_' + slugify(heading.textContent);
+      const oldId = heading.id;
+      heading.id = uniqueId(heading);
+
+      // keep Jupyter's own permalink anchor (the "¶" link) pointing at the new id
+      if (oldId && oldId !== heading.id) {
+        heading.querySelectorAll('a[href="#' + CSS.escape(oldId) + '"]').forEach(a => {
+          a.setAttribute('href', '#' + heading.id);
+        });
       }
 
       const level = parseInt(heading.tagName.substring(1), 10);
@@ -101,11 +124,12 @@
       // Smooth scroll on click using scrollIntoView:contentReference[oaicite:3]{index=3}
       link.addEventListener('click', function(e) {
         e.preventDefault();
-        document.getElementById(heading.id).scrollIntoView({
+        heading.scrollIntoView({
           behavior: 'smooth',
           block: 'start'
         });
       });
+      linkByHeading.set(heading, link);
 
       li.appendChild(link);
       list.appendChild(li);
@@ -154,7 +178,7 @@
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           navLinks.forEach(a => a.classList.remove('active'));
-          const active = nav.querySelector(`a[href="#${entry.target.id}"]`);
+          const active = linkByHeading.get(entry.target);
           if (active) active.classList.add('active');
         }
       });
